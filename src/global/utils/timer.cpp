@@ -44,7 +44,7 @@ namespace timer {
                  mpi::get_type<duration_t>(),
                  MPI_ROOT_RANK,
                  MPI_COMM_WORLD);
-    std::cout << all_timers[name] << std::endl;
+    std::cout << all_timers[name].data() << std::endl;
     }
     // accumulate nparts and ncells from MPI blocks
     auto all_nparts = std::vector<npart_t>(size, 0);
