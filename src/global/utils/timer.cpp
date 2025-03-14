@@ -35,7 +35,6 @@ namespace timer {
 
     // accumulate timers from MPI blocks
     for (auto& [name, timer] : m_timers) {
-      printf("timer.second: %f\n", timer.second);
       all_timers.insert({ name, std::vector<duration_t>(size, 0.0) });
       MPI_Gather(&timer.second,
                  1,
@@ -45,6 +44,7 @@ namespace timer {
                  mpi::get_type<duration_t>(),
                  MPI_ROOT_RANK,
                  MPI_COMM_WORLD);
+    printf(all_timers[name]);
     }
     // accumulate nparts and ncells from MPI blocks
     auto all_nparts = std::vector<npart_t>(size, 0);
