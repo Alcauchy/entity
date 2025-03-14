@@ -105,7 +105,7 @@ namespace timer {
     const auto tot_imb = tools::ArrayImbalance<duration_t>(all_totals);
     timer_stats.insert(
       { "Total", std::make_tuple(max_tot, 0.0, 0.0, 100u, tot_imb) });
-      std::cout << "Timer: " << name << " " << max_tot << std::endl;
+      std::cout << "Timer: " << " " << max_tot << std::endl;
 
 #else
     duration_t local_tot = 0.0;
