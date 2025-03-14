@@ -271,7 +271,7 @@ namespace timer {
         convertTime(time, units);
       }
       ss << fmt::alignedTable({ name,
-                                fmt::format("%.2Lf", time) + " " + units,
+                                fmt::format("%.2f", time) + " " + units,
                                 std::to_string(tot_pct) + "%" },
                               { (active ? c_reset : c_bblack),
                                 (active ? c_byellow : c_bblack),
