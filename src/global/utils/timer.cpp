@@ -187,13 +187,12 @@ namespace timer {
         convertTime(time, units);
         convertTime(per_npart, units_npart);
         convertTime(per_ncells, units_ncells);
-        printf("time: %f\n", time);
       }
 
       if (multi_rank) {
         ss << fmt::alignedTable(
           { name,
-            fmt::format("%.2Lf", time) + " " + units,
+            fmt::format("%.2f", time) + " " + units,
             std::to_string(tot_pct) + "%",
             std::to_string(var_pct) + "%",
             fmt::format("%.2Lf", per_npart) + " " + units_npart,
