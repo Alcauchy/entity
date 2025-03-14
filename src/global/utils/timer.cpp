@@ -44,7 +44,6 @@ namespace timer {
                  mpi::get_type<duration_t>(),
                  MPI_ROOT_RANK,
                  MPI_COMM_WORLD);
-    std::cout << all_timers[name][0] << std::endl;
     }
     // accumulate nparts and ncells from MPI blocks
     auto all_nparts = std::vector<npart_t>(size, 0);
@@ -113,6 +112,7 @@ namespace timer {
           ignore_in_tot.end()) {
         local_tot += timer.second;
       }
+    std::cout << "Timer: " << name << " " << local_tot << std::endl;
     }
     for (auto& [name, timer] : m_timers) {
       const auto pcent = static_cast<unsigned short>(
