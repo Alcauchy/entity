@@ -184,7 +184,7 @@ namespace timer {
       const auto  tot_pct    = std::get<3>(stats.at(name));
       const auto  var_pct    = std::get<4>(stats.at(name));
       if (flags & Timer::AutoConvert) {
-        std::cout << "AutoConvert" << time << std::endl;
+        printf("time: %f\n", time);
         convertTime(time, units);
         convertTime(per_npart, units_npart);
         convertTime(per_ncells, units_ncells);
