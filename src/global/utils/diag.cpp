@@ -127,7 +127,7 @@ namespace diag {
         c_reset);
 
       ss << fmt::alignedTable(
-        { "Time:", fmt::format("%.4Lf", time), fmt::format("[Δt = %.4Lf]", dt) },
+        { "Time:", fmt::format("%.4f", time), fmt::format("[Δt = %.4f]", dt) },
         { c_reset, c_bgreen, c_bblack },
         { 0, -6, -15 },
         { ' ', ' ', ' ' },
