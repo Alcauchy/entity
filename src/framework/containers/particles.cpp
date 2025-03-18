@@ -79,16 +79,16 @@ namespace ntt {
 
     // count # of particles per each tag
     auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
-    Kokkos::parallel_for(
-      "NpartPerTag",
-      rangeActiveParticles(),
-      Lambda(index_t p) {
-        auto npptag_acc = npptag_scat.access();
-        if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
-          raise::KernelError(HERE, "Invalid tag value");
-        }
-        npptag_acc(this_tag(p)) += 1;
-      });
+    // Kokkos::parallel_for(
+    //   "NpartPerTag",
+    //   rangeActiveParticles(),
+    //   Lambda(index_t p) {
+    //     auto npptag_acc = npptag_scat.access();
+    //     if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
+    //       raise::KernelError(HERE, "Invalid tag value");
+    //     }
+    //     npptag_acc(this_tag(p)) += 1;
+    //   });
     // Kokkos::Experimental::contribute(npptag, npptag_scat);
 
     // // copy the count to a vector on the host
