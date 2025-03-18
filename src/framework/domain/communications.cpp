@@ -600,34 +600,34 @@ namespace ntt {
         }
       } // end directions loop
 
-      Kokkos::deep_copy(shifts_in_x1, shifts_in_x1_h);
-      Kokkos::deep_copy(shifts_in_x2, shifts_in_x2_h);
-      Kokkos::deep_copy(shifts_in_x3, shifts_in_x3_h);
+      // Kokkos::deep_copy(shifts_in_x1, shifts_in_x1_h);
+      // Kokkos::deep_copy(shifts_in_x2, shifts_in_x2_h);
+      // Kokkos::deep_copy(shifts_in_x3, shifts_in_x3_h);
 
-      array_t<npart_t*> outgoing_indices { "outgoing_indices", npart - npart_alive };
-      // clang-format off
-      Kokkos::parallel_for(
-        "PrepareOutgoingPrtls",
-        species.rangeActiveParticles(),
-        kernel::comm::PrepareOutgoingPrtls_kernel<M::Dim>(
-            shifts_in_x1, shifts_in_x2, shifts_in_x3,
-            outgoing_indices,
-            npart, npart_alive, npart_dead, ntags,
-            species.i1, species.i1_prev, 
-            species.i2, species.i2_prev,
-            species.i3, species.i3_prev,
-            species.tag, tag_offsets)
-      );
-      // clang-format on
+      // array_t<npart_t*> outgoing_indices { "outgoing_indices", npart - npart_alive };
+      // // clang-format off
+      // Kokkos::parallel_for(
+      //   "PrepareOutgoingPrtls",
+      //   species.rangeActiveParticles(),
+      //   kernel::comm::PrepareOutgoingPrtls_kernel<M::Dim>(
+      //       shifts_in_x1, shifts_in_x2, shifts_in_x3,
+      //       outgoing_indices,
+      //       npart, npart_alive, npart_dead, ntags,
+      //       species.i1, species.i1_prev, 
+      //       species.i2, species.i2_prev,
+      //       species.i3, species.i3_prev,
+      //       species.tag, tag_offsets)
+      // );
+      // // clang-format on
 
-      comm::CommunicateParticles<M::Dim, M::CoordType>(species,
-                                                       outgoing_indices,
-                                                       tag_offsets,
-                                                       npptag_vec,
-                                                       npptag_recv_vec,
-                                                       send_ranks,
-                                                       recv_ranks,
-                                                       dirs_to_comm);
+      // comm::CommunicateParticles<M::Dim, M::CoordType>(species,
+      //                                                  outgoing_indices,
+      //                                                  tag_offsets,
+      //                                                  npptag_vec,
+      //                                                  npptag_recv_vec,
+      //                                                  send_ranks,
+      //                                                  recv_ranks,
+      //                                                  dirs_to_comm);
       species.set_unsorted();
     } // end species loop
 #else
@@ -635,12 +635,12 @@ namespace ntt {
 #endif
   }
 
-  // template <SimEngine::type S, class M>
-  // void Metadomain<S, M>::RemoveDeadParticles(Domain<S, M>& domain) {
-  //   for (auto& species : domain.species) {
-  //     species.RemoveDead();
-  //   }
-  // }
+  template <SimEngine::type S, class M>
+  void Metadomain<S, M>::RemoveDeadParticles(Domain<S, M>& domain) {
+    for (auto& species : domain.species) {
+      species.RemoveDead();
+    }
+  }
 
   template struct Metadomain<SimEngine::SRPIC, metric::Minkowski<Dim::_1D>>;
   template struct Metadomain<SimEngine::SRPIC, metric::Minkowski<Dim::_2D>>;
