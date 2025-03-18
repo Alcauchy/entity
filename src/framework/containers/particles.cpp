@@ -77,37 +77,37 @@ namespace ntt {
     const auto        num_tags = ntags();
     array_t<npart_t*> npptag { "nparts_per_tag", ntags() };
 
-    // count # of particles per each tag
-    auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
-    Kokkos::parallel_for(
-      "NpartPerTag",
-      rangeActiveParticles(),
-      Lambda(index_t p) {
-        auto npptag_acc = npptag_scat.access();
-        if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
-          raise::KernelError(HERE, "Invalid tag value");
-        }
-        npptag_acc(this_tag(p)) += 1;
-      });
-    Kokkos::Experimental::contribute(npptag, npptag_scat);
+    // // count # of particles per each tag
+    // auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
+    // Kokkos::parallel_for(
+    //   "NpartPerTag",
+    //   rangeActiveParticles(),
+    //   Lambda(index_t p) {
+    //     auto npptag_acc = npptag_scat.access();
+    //     if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
+    //       raise::KernelError(HERE, "Invalid tag value");
+    //     }
+    //     npptag_acc(this_tag(p)) += 1;
+    //   });
+    // Kokkos::Experimental::contribute(npptag, npptag_scat);
 
-    // copy the count to a vector on the host
-    auto npptag_h = Kokkos::create_mirror_view(npptag);
-    Kokkos::deep_copy(npptag_h, npptag);
+    // // copy the count to a vector on the host
+    // auto npptag_h = Kokkos::create_mirror_view(npptag);
+    // Kokkos::deep_copy(npptag_h, npptag);
     std::vector<npart_t> npptag_vec(num_tags);
-    for (auto t { 0u }; t < num_tags; ++t) {
-      npptag_vec[t] = npptag_h(t);
-    }
+    // for (auto t { 0u }; t < num_tags; ++t) {
+    //   npptag_vec[t] = npptag_h(t);
+    // }
 
     // count the offsets on the host and copy to device
     array_t<npart_t*> tag_offsets("tag_offsets", num_tags - 3);
-    auto              tag_offsets_h = Kokkos::create_mirror_view(tag_offsets);
+    // auto              tag_offsets_h = Kokkos::create_mirror_view(tag_offsets);
 
-    tag_offsets_h(0) = npptag_vec[2]; // offset for tag = 3
-    for (auto t { 1u }; t < num_tags - 3; ++t) {
-      tag_offsets_h(t) = npptag_vec[t + 2] + tag_offsets_h(t - 1);
-    }
-    Kokkos::deep_copy(tag_offsets, tag_offsets_h);
+    // tag_offsets_h(0) = npptag_vec[2]; // offset for tag = 3
+    // for (auto t { 1u }; t < num_tags - 3; ++t) {
+    //   tag_offsets_h(t) = npptag_vec[t + 2] + tag_offsets_h(t - 1);
+    // }
+    // Kokkos::deep_copy(tag_offsets, tag_offsets_h);
 
     return { npptag_vec, tag_offsets };
   }
