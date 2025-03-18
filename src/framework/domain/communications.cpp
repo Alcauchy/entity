@@ -498,36 +498,36 @@ namespace ntt {
   void Metadomain<S, M>::CommunicateParticles(Domain<S, M>& domain) {
 #if defined(MPI_ENABLED)
     logger::Checkpoint("Communicating particles\n", HERE);
-    // for (auto& species : domain.species) {
-    //   const auto ntags = species.ntags();
+    for (auto& species : domain.species) {
+      const auto ntags = species.ntags();
 
-    //   // at this point particles should already be tagged in the pusher
-    //   auto [npptag_vec, tag_offsets] = species.NpartsPerTagAndOffsets();
-    //   const auto npart_dead          = npptag_vec[ParticleTag::dead];
-    //   const auto npart_alive         = npptag_vec[ParticleTag::alive];
+      // at this point particles should already be tagged in the pusher
+      auto [npptag_vec, tag_offsets] = species.NpartsPerTagAndOffsets();
+      const auto npart_dead          = npptag_vec[ParticleTag::dead];
+      const auto npart_alive         = npptag_vec[ParticleTag::alive];
 
-    //   const auto npart       = species.npart();
-    //   const auto npart_holes = npart - npart_alive;
+      const auto npart       = species.npart();
+      const auto npart_holes = npart - npart_alive;
 
-    //   // # of particles to receive per each tag (direction)
-    //   std::vector<npart_t> npptag_recv_vec(ntags - 2, 0);
-    //   // coordinate shifts per each direction
-    //   array_t<int*>        shifts_in_x1 { "shifts_in_x1", ntags - 2 };
-    //   array_t<int*>        shifts_in_x2 { "shifts_in_x2", ntags - 2 };
-    //   array_t<int*>        shifts_in_x3 { "shifts_in_x3", ntags - 2 };
-    //   auto shifts_in_x1_h = Kokkos::create_mirror_view(shifts_in_x1);
-    //   auto shifts_in_x2_h = Kokkos::create_mirror_view(shifts_in_x2);
-    //   auto shifts_in_x3_h = Kokkos::create_mirror_view(shifts_in_x3);
+      // // # of particles to receive per each tag (direction)
+      // std::vector<npart_t> npptag_recv_vec(ntags - 2, 0);
+      // // coordinate shifts per each direction
+      // array_t<int*>        shifts_in_x1 { "shifts_in_x1", ntags - 2 };
+      // array_t<int*>        shifts_in_x2 { "shifts_in_x2", ntags - 2 };
+      // array_t<int*>        shifts_in_x3 { "shifts_in_x3", ntags - 2 };
+      // auto shifts_in_x1_h = Kokkos::create_mirror_view(shifts_in_x1);
+      // auto shifts_in_x2_h = Kokkos::create_mirror_view(shifts_in_x2);
+      // auto shifts_in_x3_h = Kokkos::create_mirror_view(shifts_in_x3);
 
-    //   // all directions requiring communication
-    //   dir::dirs_t<D> dirs_to_comm;
+      // // all directions requiring communication
+      // dir::dirs_t<D> dirs_to_comm;
 
-    //   // ranks & indices of meshblock to send/recv from
-    //   std::vector<int> send_ranks, send_inds;
-    //   std::vector<int> recv_ranks, recv_inds;
+      // // ranks & indices of meshblock to send/recv from
+      // std::vector<int> send_ranks, send_inds;
+      // std::vector<int> recv_ranks, recv_inds;
 
-    //   // total # of reaceived particles from all directions
-    //   npart_t npart_recv = 0u;
+      // // total # of reaceived particles from all directions
+      // npart_t npart_recv = 0u;
 
       // for (const auto& direction : dir::Directions<D>::all) {
       //   // tags corresponding to the direction (both send & recv)
@@ -629,7 +629,7 @@ namespace ntt {
       //                                                  recv_ranks,
       //                                                  dirs_to_comm);
       // species.set_unsorted();
-    // } // end species loop
+    } // end species loop
 #else
     (void)domain;
 #endif
