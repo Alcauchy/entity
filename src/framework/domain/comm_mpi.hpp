@@ -335,24 +335,24 @@ namespace comm {
     const unsigned short NPRTLDX = 2 * static_cast<unsigned short>(D);
     const unsigned short NPLDS   = species.npld();
 
-    // buffers to store recv data
-    const auto       npart_alive = npptag_vec[ParticleTag::alive];
-    const auto       npart_dead  = npptag_vec[ParticleTag::dead];
-    const auto       npart_send  = outgoing_indices.extent(0) - npart_dead;
-    const auto       npart_recv  = std::accumulate(npptag_recv_vec.begin(),
-                                            npptag_recv_vec.end(),
-                                            static_cast<npart_t>(0));
-    array_t<int*>    recv_buff_int { "recv_buff_int", npart_recv * NINTS };
-    array_t<real_t*> recv_buff_real { "recv_buff_real", npart_recv * NREALS };
-    array_t<prtldx_t*> recv_buff_prtldx { "recv_buff_prtldx", npart_recv * NPRTLDX };
-    array_t<real_t*> recv_buff_pld;
+    // // buffers to store recv data
+    // const auto       npart_alive = npptag_vec[ParticleTag::alive];
+    // const auto       npart_dead  = npptag_vec[ParticleTag::dead];
+    // const auto       npart_send  = outgoing_indices.extent(0) - npart_dead;
+    // const auto       npart_recv  = std::accumulate(npptag_recv_vec.begin(),
+    //                                         npptag_recv_vec.end(),
+    //                                         static_cast<npart_t>(0));
+    // array_t<int*>    recv_buff_int { "recv_buff_int", npart_recv * NINTS };
+    // array_t<real_t*> recv_buff_real { "recv_buff_real", npart_recv * NREALS };
+    // array_t<prtldx_t*> recv_buff_prtldx { "recv_buff_prtldx", npart_recv * NPRTLDX };
+    // array_t<real_t*> recv_buff_pld;
 
-    if (NPLDS > 0) {
-      recv_buff_pld = array_t<real_t*> { "recv_buff_pld", npart_recv * NPLDS };
-    }
+    // if (NPLDS > 0) {
+    //   recv_buff_pld = array_t<real_t*> { "recv_buff_pld", npart_recv * NPLDS };
+    // }
 
-    auto iteration        = 0;
-    auto current_received = 0;
+    // auto iteration        = 0;
+    // auto current_received = 0;
 
     // for (const auto& direction : dirs_to_comm) {
     //   const auto send_rank     = send_ranks[iteration];
