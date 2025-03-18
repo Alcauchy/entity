@@ -77,19 +77,43 @@ namespace ntt {
     const auto        num_tags = ntags();
     array_t<npart_t*> npptag { "nparts_per_tag", ntags() };
 
-    // count # of particles per each tag
-    auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
-    Kokkos::parallel_for(
-      "NpartPerTag",
-      rangeActiveParticles(),
-      Lambda(index_t p) {
+    // // count # of particles per each tag
+    // auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
+    // Kokkos::parallel_for(
+    //   "NpartPerTag",
+    //   rangeActiveParticles(),
+    //   Lambda(index_t p) {
+    //     auto npptag_acc = npptag_scat.access();
+    //     if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
+    //       raise::KernelError(HERE, "Invalid tag value");
+    //     }
+    //     npptag_acc(this_tag(p)) += 1;
+    //   });
+    // Kokkos::Experimental::contribute(npptag, npptag_scat);
+
+// Count # of particles per each tag using parallel_scan
+auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
+Kokkos::parallel_scan(
+    "NpartPerTag",
+    rangeActiveParticles(),
+    KOKKOS_LAMBDA(const index_t p, int& update, const bool final) {
         auto npptag_acc = npptag_scat.access();
-        // if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
-        //   raise::KernelError(HERE, "Invalid tag value");
-        // }
-        // npptag_acc(this_tag(p)) += 1;
-      });
-    Kokkos::Experimental::contribute(npptag, npptag_scat);
+        const int tag = this_tag(p);
+
+        if (tag < 0 || tag >= num_tags) {
+            raise::KernelError(HERE, "Invalid tag value");
+        }
+
+        // Increment per-tag count
+        if (final) {  // Only write in the final pass
+            npptag_acc(tag) += 1;
+        }
+        
+        // Inclusive scan update (dummy variable, not needed for final accumulation)
+        update += 1;
+    });
+
+Kokkos::Experimental::contribute(npptag, npptag_scat);
 
     // // copy the count to a vector on the host
     auto npptag_h = Kokkos::create_mirror_view(npptag);
