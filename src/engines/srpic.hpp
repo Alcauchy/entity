@@ -117,7 +117,7 @@ namespace ntt {
 
           timers.start("Communications");
           m_metadomain.SynchronizeFields(dom, Comm::J);
-          // m_metadomain.CommunicateFields(dom, Comm::J);
+          m_metadomain.CommunicateFields(dom, Comm::J);
           timers.stop("Communications");
 
           timers.start("CurrentFiltering");
@@ -126,7 +126,7 @@ namespace ntt {
         }
 
         timers.start("Communications");
-        m_metadomain.CommunicateParticles(dom);
+        // m_metadomain.CommunicateParticles(dom);
         timers.stop("Communications");
       }
 
@@ -154,7 +154,7 @@ namespace ntt {
         }
 
         timers.start("Communications");
-        // m_metadomain.CommunicateFields(dom, Comm::E | Comm::J);
+        m_metadomain.CommunicateFields(dom, Comm::E | Comm::J);
         timers.stop("Communications");
 
         timers.start("FieldBoundaries");
@@ -578,7 +578,7 @@ namespace ntt {
                                domain.fields.buff,
                                size,
                                domain.mesh.flds_bc()));
-        // m_metadomain.CommunicateFields(domain, Comm::J);
+        m_metadomain.CommunicateFields(domain, Comm::J);
       }
     }
 
