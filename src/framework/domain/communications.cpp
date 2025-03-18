@@ -501,8 +501,8 @@ namespace ntt {
     for (auto& species : domain.species) {
       const auto ntags = species.ntags();
 
-      // // at this point particles should already be tagged in the pusher
-      // auto [npptag_vec, tag_offsets] = species.NpartsPerTagAndOffsets();
+      // at this point particles should already be tagged in the pusher
+      auto [npptag_vec, tag_offsets] = species.NpartsPerTagAndOffsets();
       // const auto npart_dead          = npptag_vec[ParticleTag::dead];
       // const auto npart_alive         = npptag_vec[ParticleTag::alive];
 
