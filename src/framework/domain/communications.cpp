@@ -501,13 +501,13 @@ namespace ntt {
     for (auto& species : domain.species) {
       const auto ntags = species.ntags();
 
-      // at this point particles should already be tagged in the pusher
-      auto [npptag_vec, tag_offsets] = species.NpartsPerTagAndOffsets();
-      const auto npart_dead          = npptag_vec[ParticleTag::dead];
-      const auto npart_alive         = npptag_vec[ParticleTag::alive];
+      // // at this point particles should already be tagged in the pusher
+      // auto [npptag_vec, tag_offsets] = species.NpartsPerTagAndOffsets();
+      // const auto npart_dead          = npptag_vec[ParticleTag::dead];
+      // const auto npart_alive         = npptag_vec[ParticleTag::alive];
 
-      const auto npart       = species.npart();
-      const auto npart_holes = npart - npart_alive;
+      // const auto npart       = species.npart();
+      // const auto npart_holes = npart - npart_alive;
 
       // // # of particles to receive per each tag (direction)
       // std::vector<npart_t> npptag_recv_vec(ntags - 2, 0);
