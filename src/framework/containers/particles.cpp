@@ -78,7 +78,7 @@ namespace ntt {
     array_t<npart_t*> npptag { "nparts_per_tag", ntags() };
 
     // count # of particles per each tag
-    auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
+    array_t<npart_t*> npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
     Kokkos::parallel_for(
       "NpartPerTag",
       rangeActiveParticles(),
@@ -91,7 +91,7 @@ namespace ntt {
       });
     Kokkos::Experimental::contribute(npptag, npptag_scat);
 
-    // // copy the count to a vector on the host
+    // copy the count to a vector on the host
     auto npptag_h = Kokkos::create_mirror_view(npptag);
     Kokkos::deep_copy(npptag_h, npptag);
     std::vector<npart_t> npptag_vec(num_tags);
