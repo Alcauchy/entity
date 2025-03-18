@@ -620,14 +620,14 @@ namespace ntt {
       );
       // clang-format on
 
-      // comm::CommunicateParticles<M::Dim, M::CoordType>(species,
-      //                                                  outgoing_indices,
-      //                                                  tag_offsets,
-      //                                                  npptag_vec,
-      //                                                  npptag_recv_vec,
-      //                                                  send_ranks,
-      //                                                  recv_ranks,
-      //                                                  dirs_to_comm);
+      comm::CommunicateParticles<M::Dim, M::CoordType>(species,
+                                                       outgoing_indices,
+                                                       tag_offsets,
+                                                       npptag_vec,
+                                                       npptag_recv_vec,
+                                                       send_ranks,
+                                                       recv_ranks,
+                                                       dirs_to_comm);
       species.set_unsorted();
     } // end species loop
 #else
