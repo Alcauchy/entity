@@ -635,12 +635,12 @@ namespace ntt {
 #endif
   }
 
-  template <SimEngine::type S, class M>
-  void Metadomain<S, M>::RemoveDeadParticles(Domain<S, M>& domain) {
-    for (auto& species : domain.species) {
-      species.RemoveDead();
-    }
-  }
+  // template <SimEngine::type S, class M>
+  // void Metadomain<S, M>::RemoveDeadParticles(Domain<S, M>& domain) {
+  //   for (auto& species : domain.species) {
+  //     species.RemoveDead();
+  //   }
+  // }
 
   template struct Metadomain<SimEngine::SRPIC, metric::Minkowski<Dim::_1D>>;
   template struct Metadomain<SimEngine::SRPIC, metric::Minkowski<Dim::_2D>>;

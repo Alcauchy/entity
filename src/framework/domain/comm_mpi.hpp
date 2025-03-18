@@ -335,218 +335,218 @@ namespace comm {
     const unsigned short NPRTLDX = 2 * static_cast<unsigned short>(D);
     const unsigned short NPLDS   = species.npld();
 
-    // // buffers to store recv data
-    // const auto       npart_alive = npptag_vec[ParticleTag::alive];
-    // const auto       npart_dead  = npptag_vec[ParticleTag::dead];
-    // const auto       npart_send  = outgoing_indices.extent(0) - npart_dead;
-    // const auto       npart_recv  = std::accumulate(npptag_recv_vec.begin(),
-    //                                         npptag_recv_vec.end(),
-    //                                         static_cast<npart_t>(0));
-    // array_t<int*>    recv_buff_int { "recv_buff_int", npart_recv * NINTS };
-    // array_t<real_t*> recv_buff_real { "recv_buff_real", npart_recv * NREALS };
-    // array_t<prtldx_t*> recv_buff_prtldx { "recv_buff_prtldx", npart_recv * NPRTLDX };
-    // array_t<real_t*> recv_buff_pld;
+    // buffers to store recv data
+    const auto       npart_alive = npptag_vec[ParticleTag::alive];
+    const auto       npart_dead  = npptag_vec[ParticleTag::dead];
+    const auto       npart_send  = outgoing_indices.extent(0) - npart_dead;
+    const auto       npart_recv  = std::accumulate(npptag_recv_vec.begin(),
+                                            npptag_recv_vec.end(),
+                                            static_cast<npart_t>(0));
+    array_t<int*>    recv_buff_int { "recv_buff_int", npart_recv * NINTS };
+    array_t<real_t*> recv_buff_real { "recv_buff_real", npart_recv * NREALS };
+    array_t<prtldx_t*> recv_buff_prtldx { "recv_buff_prtldx", npart_recv * NPRTLDX };
+    array_t<real_t*> recv_buff_pld;
 
-    // if (NPLDS > 0) {
-    //   recv_buff_pld = array_t<real_t*> { "recv_buff_pld", npart_recv * NPLDS };
-    // }
+    if (NPLDS > 0) {
+      recv_buff_pld = array_t<real_t*> { "recv_buff_pld", npart_recv * NPLDS };
+    }
 
-    // auto iteration        = 0;
-    // auto current_received = 0;
+    auto iteration        = 0;
+    auto current_received = 0;
 
-    // for (const auto& direction : dirs_to_comm) {
-    //   const auto send_rank     = send_ranks[iteration];
-    //   const auto recv_rank     = recv_ranks[iteration];
-    //   const auto tag_send      = mpi::PrtlSendTag<D>::dir2tag(direction);
-    //   const auto tag_recv      = mpi::PrtlSendTag<D>::dir2tag(-direction);
-    //   const auto npart_send_in = npptag_vec[tag_send];
-    //   const auto npart_recv_in = npptag_recv_vec[tag_recv - 2];
-    //   if (send_rank < 0 and recv_rank < 0) {
-    //     continue;
-    //   }
-    //   array_t<int*> send_buff_int { "send_buff_int", npart_send_in * NINTS };
-    //   array_t<real_t*> send_buff_real { "send_buff_real", npart_send_in * NREALS };
-    //   array_t<prtldx_t*> send_buff_prtldx { "send_buff_prtldx",
-    //                                         npart_send_in * NPRTLDX };
-    //   array_t<real_t*>   send_buff_pld;
-    //   if (NPLDS > 0) {
-    //     send_buff_pld = array_t<real_t*> { "send_buff_pld", npart_send_in * NPLDS };
-    //   }
+    for (const auto& direction : dirs_to_comm) {
+      const auto send_rank     = send_ranks[iteration];
+      const auto recv_rank     = recv_ranks[iteration];
+      const auto tag_send      = mpi::PrtlSendTag<D>::dir2tag(direction);
+      const auto tag_recv      = mpi::PrtlSendTag<D>::dir2tag(-direction);
+      const auto npart_send_in = npptag_vec[tag_send];
+      const auto npart_recv_in = npptag_recv_vec[tag_recv - 2];
+      if (send_rank < 0 and recv_rank < 0) {
+        continue;
+      }
+      array_t<int*> send_buff_int { "send_buff_int", npart_send_in * NINTS };
+      array_t<real_t*> send_buff_real { "send_buff_real", npart_send_in * NREALS };
+      array_t<prtldx_t*> send_buff_prtldx { "send_buff_prtldx",
+                                            npart_send_in * NPRTLDX };
+      array_t<real_t*>   send_buff_pld;
+      if (NPLDS > 0) {
+        send_buff_pld = array_t<real_t*> { "send_buff_pld", npart_send_in * NPLDS };
+      }
 
-    //   auto tag_offsets_h = Kokkos::create_mirror_view(tag_offsets);
-    //   Kokkos::deep_copy(tag_offsets_h, tag_offsets);
+      auto tag_offsets_h = Kokkos::create_mirror_view(tag_offsets);
+      Kokkos::deep_copy(tag_offsets_h, tag_offsets);
 
-    //   npart_t idx_offset = npart_dead;
-    //   if (tag_send > 2) {
-    //     idx_offset += tag_offsets_h(tag_send - 3);
-    //   }
-    //   // clang-format off
-    //   Kokkos::parallel_for(
-    //     "PopulatePrtlSendBuffer",
-    //     npart_send_in,
-    //     kernel::comm::PopulatePrtlSendBuffer_kernel<D, C>(
-    //       send_buff_int, send_buff_real, send_buff_prtldx, send_buff_pld,
-    //       NINTS, NREALS, NPRTLDX, NPLDS, idx_offset,
-    //       species.i1, species.i1_prev, species.dx1, species.dx1_prev,
-    //       species.i2, species.i2_prev, species.dx2, species.dx2_prev,
-    //       species.i3, species.i3_prev, species.dx3, species.dx3_prev,
-    //       species.ux1, species.ux2, species.ux3, 
-    //       species.weight, species.phi, species.pld, species.tag,
-    //       outgoing_indices)
-    //   );
-    //   // clang-format on
+      npart_t idx_offset = npart_dead;
+      if (tag_send > 2) {
+        idx_offset += tag_offsets_h(tag_send - 3);
+      }
+      // clang-format off
+      Kokkos::parallel_for(
+        "PopulatePrtlSendBuffer",
+        npart_send_in,
+        kernel::comm::PopulatePrtlSendBuffer_kernel<D, C>(
+          send_buff_int, send_buff_real, send_buff_prtldx, send_buff_pld,
+          NINTS, NREALS, NPRTLDX, NPLDS, idx_offset,
+          species.i1, species.i1_prev, species.dx1, species.dx1_prev,
+          species.i2, species.i2_prev, species.dx2, species.dx2_prev,
+          species.i3, species.i3_prev, species.dx3, species.dx3_prev,
+          species.ux1, species.ux2, species.ux3, 
+          species.weight, species.phi, species.pld, species.tag,
+          outgoing_indices)
+      );
+      // clang-format on
 
-    //   const auto recv_offset_int    = current_received * NINTS;
-    //   const auto recv_offset_real   = current_received * NREALS;
-    //   const auto recv_offset_prtldx = current_received * NPRTLDX;
-    //   const auto recv_offset_pld    = current_received * NPLDS;
+      const auto recv_offset_int    = current_received * NINTS;
+      const auto recv_offset_real   = current_received * NREALS;
+      const auto recv_offset_prtldx = current_received * NPRTLDX;
+      const auto recv_offset_pld    = current_received * NPLDS;
 
-      // if ((send_rank >= 0) and (recv_rank >= 0) and (npart_send_in > 0) and
-      //     (npart_recv_in > 0)) {
-      //   raise::ErrorIf(recv_offset_int + npart_recv_in * NINTS >
-      //                    recv_buff_int.extent(0),
-      //                  "incorrect # of recv particles",
-      //                  HERE);
-      //   MPI_Sendrecv(send_buff_int.data(),
-      //                npart_send_in * NINTS,
-      //                mpi::get_type<int>(),
-      //                send_rank,
-      //                0,
-      //                recv_buff_int.data() + recv_offset_int,
-      //                npart_recv_in * NINTS,
-      //                mpi::get_type<int>(),
-      //                recv_rank,
-      //                0,
-      //                MPI_COMM_WORLD,
-      //                MPI_STATUS_IGNORE);
-      //   MPI_Sendrecv(send_buff_real.data(),
-      //                npart_send_in * NREALS,
-      //                mpi::get_type<real_t>(),
-      //                send_rank,
-      //                0,
-      //                recv_buff_real.data() + recv_offset_real,
-      //                npart_recv_in * NREALS,
-      //                mpi::get_type<real_t>(),
-      //                recv_rank,
-      //                0,
-      //                MPI_COMM_WORLD,
-      //                MPI_STATUS_IGNORE);
-      //   MPI_Sendrecv(send_buff_prtldx.data(),
-      //                npart_send_in * NPRTLDX,
-      //                mpi::get_type<prtldx_t>(),
-      //                send_rank,
-      //                0,
-      //                recv_buff_prtldx.data() + recv_offset_prtldx,
-      //                npart_recv_in * NPRTLDX,
-      //                mpi::get_type<prtldx_t>(),
-      //                recv_rank,
-      //                0,
-      //                MPI_COMM_WORLD,
-      //                MPI_STATUS_IGNORE);
-      //   if (NPLDS > 0) {
-      //     MPI_Sendrecv(send_buff_pld.data(),
-      //                  npart_send_in * NPLDS,
-      //                  mpi::get_type<real_t>(),
-      //                  send_rank,
-      //                  0,
-      //                  recv_buff_pld.data() + recv_offset_pld,
-      //                  npart_recv_in * NPLDS,
-      //                  mpi::get_type<real_t>(),
-      //                  recv_rank,
-      //                  0,
-      //                  MPI_COMM_WORLD,
-      //                  MPI_STATUS_IGNORE);
-      //   }
-      // } else if ((send_rank >= 0) and (npart_send_in > 0)) {
-      //   MPI_Send(send_buff_int.data(),
-      //            npart_send_in * NINTS,
-      //            mpi::get_type<int>(),
-      //            send_rank,
-      //            0,
-      //            MPI_COMM_WORLD);
-      //   MPI_Send(send_buff_real.data(),
-      //            npart_send_in * NREALS,
-      //            mpi::get_type<real_t>(),
-      //            send_rank,
-      //            0,
-      //            MPI_COMM_WORLD);
-      //   MPI_Send(send_buff_prtldx.data(),
-      //            npart_send_in * NPRTLDX,
-      //            mpi::get_type<prtldx_t>(),
-      //            send_rank,
-      //            0,
-      //            MPI_COMM_WORLD);
-      //   if (NPLDS > 0) {
-      //     MPI_Send(send_buff_pld.data(),
-      //              npart_send_in * NPLDS,
-      //              mpi::get_type<real_t>(),
-      //              send_rank,
-      //              0,
-      //              MPI_COMM_WORLD);
-      //   }
-      // } else if ((recv_rank >= 0) and (npart_recv_in > 0)) {
-      //   raise::ErrorIf(recv_offset_int + npart_recv_in * NINTS >
-      //                    recv_buff_int.extent(0),
-      //                  "incorrect # of recv particles",
-      //                  HERE);
-      //   MPI_Recv(recv_buff_int.data() + recv_offset_int,
-      //            npart_recv_in * NINTS,
-      //            mpi::get_type<int>(),
-      //            recv_rank,
-      //            0,
-      //            MPI_COMM_WORLD,
-      //            MPI_STATUS_IGNORE);
-      //   MPI_Recv(recv_buff_real.data() + recv_offset_real,
-      //            npart_recv_in * NREALS,
-      //            mpi::get_type<real_t>(),
-      //            recv_rank,
-      //            0,
-      //            MPI_COMM_WORLD,
-      //            MPI_STATUS_IGNORE);
-      //   MPI_Recv(recv_buff_prtldx.data() + recv_offset_prtldx,
-      //            npart_recv_in * NPRTLDX,
-      //            mpi::get_type<prtldx_t>(),
-      //            recv_rank,
-      //            0,
-      //            MPI_COMM_WORLD,
-      //            MPI_STATUS_IGNORE);
-      //   if (NPLDS > 0) {
-      //     MPI_Recv(recv_buff_pld.data() + recv_offset_pld,
-      //              npart_recv_in * NPLDS,
-      //              mpi::get_type<real_t>(),
-      //              recv_rank,
-      //              0,
-      //              MPI_COMM_WORLD,
-      //              MPI_STATUS_IGNORE);
-      //   }
-      // }
-    //   current_received += npart_recv_in;
-    //   iteration++;
+      if ((send_rank >= 0) and (recv_rank >= 0) and (npart_send_in > 0) and
+          (npart_recv_in > 0)) {
+        raise::ErrorIf(recv_offset_int + npart_recv_in * NINTS >
+                         recv_buff_int.extent(0),
+                       "incorrect # of recv particles",
+                       HERE);
+        MPI_Sendrecv(send_buff_int.data(),
+                     npart_send_in * NINTS,
+                     mpi::get_type<int>(),
+                     send_rank,
+                     0,
+                     recv_buff_int.data() + recv_offset_int,
+                     npart_recv_in * NINTS,
+                     mpi::get_type<int>(),
+                     recv_rank,
+                     0,
+                     MPI_COMM_WORLD,
+                     MPI_STATUS_IGNORE);
+        MPI_Sendrecv(send_buff_real.data(),
+                     npart_send_in * NREALS,
+                     mpi::get_type<real_t>(),
+                     send_rank,
+                     0,
+                     recv_buff_real.data() + recv_offset_real,
+                     npart_recv_in * NREALS,
+                     mpi::get_type<real_t>(),
+                     recv_rank,
+                     0,
+                     MPI_COMM_WORLD,
+                     MPI_STATUS_IGNORE);
+        MPI_Sendrecv(send_buff_prtldx.data(),
+                     npart_send_in * NPRTLDX,
+                     mpi::get_type<prtldx_t>(),
+                     send_rank,
+                     0,
+                     recv_buff_prtldx.data() + recv_offset_prtldx,
+                     npart_recv_in * NPRTLDX,
+                     mpi::get_type<prtldx_t>(),
+                     recv_rank,
+                     0,
+                     MPI_COMM_WORLD,
+                     MPI_STATUS_IGNORE);
+        if (NPLDS > 0) {
+          MPI_Sendrecv(send_buff_pld.data(),
+                       npart_send_in * NPLDS,
+                       mpi::get_type<real_t>(),
+                       send_rank,
+                       0,
+                       recv_buff_pld.data() + recv_offset_pld,
+                       npart_recv_in * NPLDS,
+                       mpi::get_type<real_t>(),
+                       recv_rank,
+                       0,
+                       MPI_COMM_WORLD,
+                       MPI_STATUS_IGNORE);
+        }
+      } else if ((send_rank >= 0) and (npart_send_in > 0)) {
+        MPI_Send(send_buff_int.data(),
+                 npart_send_in * NINTS,
+                 mpi::get_type<int>(),
+                 send_rank,
+                 0,
+                 MPI_COMM_WORLD);
+        MPI_Send(send_buff_real.data(),
+                 npart_send_in * NREALS,
+                 mpi::get_type<real_t>(),
+                 send_rank,
+                 0,
+                 MPI_COMM_WORLD);
+        MPI_Send(send_buff_prtldx.data(),
+                 npart_send_in * NPRTLDX,
+                 mpi::get_type<prtldx_t>(),
+                 send_rank,
+                 0,
+                 MPI_COMM_WORLD);
+        if (NPLDS > 0) {
+          MPI_Send(send_buff_pld.data(),
+                   npart_send_in * NPLDS,
+                   mpi::get_type<real_t>(),
+                   send_rank,
+                   0,
+                   MPI_COMM_WORLD);
+        }
+      } else if ((recv_rank >= 0) and (npart_recv_in > 0)) {
+        raise::ErrorIf(recv_offset_int + npart_recv_in * NINTS >
+                         recv_buff_int.extent(0),
+                       "incorrect # of recv particles",
+                       HERE);
+        MPI_Recv(recv_buff_int.data() + recv_offset_int,
+                 npart_recv_in * NINTS,
+                 mpi::get_type<int>(),
+                 recv_rank,
+                 0,
+                 MPI_COMM_WORLD,
+                 MPI_STATUS_IGNORE);
+        MPI_Recv(recv_buff_real.data() + recv_offset_real,
+                 npart_recv_in * NREALS,
+                 mpi::get_type<real_t>(),
+                 recv_rank,
+                 0,
+                 MPI_COMM_WORLD,
+                 MPI_STATUS_IGNORE);
+        MPI_Recv(recv_buff_prtldx.data() + recv_offset_prtldx,
+                 npart_recv_in * NPRTLDX,
+                 mpi::get_type<prtldx_t>(),
+                 recv_rank,
+                 0,
+                 MPI_COMM_WORLD,
+                 MPI_STATUS_IGNORE);
+        if (NPLDS > 0) {
+          MPI_Recv(recv_buff_pld.data() + recv_offset_pld,
+                   npart_recv_in * NPLDS,
+                   mpi::get_type<real_t>(),
+                   recv_rank,
+                   0,
+                   MPI_COMM_WORLD,
+                   MPI_STATUS_IGNORE);
+        }
+      }
+      current_received += npart_recv_in;
+      iteration++;
 
-    // } // end direction loop
+    } // end direction loop
 
-    // // clang-format off
-    // Kokkos::parallel_for(
-    //   "PopulateFromRecvBuffer",
-    //   npart_recv,
-    //   kernel::comm::ExtractReceivedPrtls_kernel<D, C>(
-    //         recv_buff_int, recv_buff_real, recv_buff_prtldx, recv_buff_pld,
-    //         NINTS, NREALS, NPRTLDX, NPLDS,
-    //         species.npart(),
-    //         species.i1, species.i1_prev, species.dx1, species.dx1_prev,
-    //         species.i2, species.i2_prev, species.dx2, species.dx2_prev,
-    //         species.i3, species.i3_prev, species.dx3, species.dx3_prev,
-    //         species.ux1, species.ux2, species.ux3,
-    //         species.weight, species.phi, species.pld, species.tag,
-    //         outgoing_indices)
-    // );
-    // // clang-format on
+    // clang-format off
+    Kokkos::parallel_for(
+      "PopulateFromRecvBuffer",
+      npart_recv,
+      kernel::comm::ExtractReceivedPrtls_kernel<D, C>(
+            recv_buff_int, recv_buff_real, recv_buff_prtldx, recv_buff_pld,
+            NINTS, NREALS, NPRTLDX, NPLDS,
+            species.npart(),
+            species.i1, species.i1_prev, species.dx1, species.dx1_prev,
+            species.i2, species.i2_prev, species.dx2, species.dx2_prev,
+            species.i3, species.i3_prev, species.dx3, species.dx3_prev,
+            species.ux1, species.ux2, species.ux3,
+            species.weight, species.phi, species.pld, species.tag,
+            outgoing_indices)
+    );
+    // clang-format on
 
-    // const auto npart       = species.npart();
-    // const auto npart_holes = outgoing_indices.extent(0);
-    // if (npart_recv > npart_holes) {
-    //   species.set_npart(npart + npart_recv - npart_holes);
-    // }
+    const auto npart       = species.npart();
+    const auto npart_holes = outgoing_indices.extent(0);
+    if (npart_recv > npart_holes) {
+      species.set_npart(npart + npart_recv - npart_holes);
+    }
   }
 
 } // namespace comm
