@@ -126,7 +126,7 @@ namespace ntt {
         }
 
         timers.start("Communications");
-        // m_metadomain.CommunicateParticles(dom);
+        m_metadomain.CommunicateParticles(dom);
         timers.stop("Communications");
       }
 
