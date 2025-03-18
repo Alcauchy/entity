@@ -75,10 +75,10 @@ namespace ntt {
     -> std::pair<std::vector<npart_t>, array_t<npart_t*>> {
     auto              this_tag = tag;
     const auto        num_tags = ntags();
-    array_t<npart_t*> npptag { "nparts_per_tag", ntags() };
+    array_t<npart_t> npptag { "nparts_per_tag", ntags() };
 
     // count # of particles per each tag
-    array_t<npart_t*> npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
+    auto npptag_scat = Kokkos::Experimental::create_scatter_view(npptag);
     Kokkos::parallel_for(
       "NpartPerTag",
       rangeActiveParticles(),
@@ -87,7 +87,7 @@ namespace ntt {
         if (this_tag(p) < 0 || this_tag(p) >= num_tags) {
           raise::KernelError(HERE, "Invalid tag value");
         }
-        npptag_acc(this_tag(p)) += static_cast<npart_t>(1);
+        npptag_acc(this_tag(p)) += 1;
       });
     Kokkos::Experimental::contribute(npptag, npptag_scat);
 
