@@ -529,76 +529,76 @@ namespace ntt {
       // total # of reaceived particles from all directions
       npart_t npart_recv = 0u;
 
-      for (const auto& direction : dir::Directions<D>::all) {
-        // tags corresponding to the direction (both send & recv)
-        const auto tag_recv = mpi::PrtlSendTag<D>::dir2tag(-direction);
-        const auto tag_send = mpi::PrtlSendTag<D>::dir2tag(direction);
+      // for (const auto& direction : dir::Directions<D>::all) {
+      //   // tags corresponding to the direction (both send & recv)
+      //   const auto tag_recv = mpi::PrtlSendTag<D>::dir2tag(-direction);
+      //   const auto tag_send = mpi::PrtlSendTag<D>::dir2tag(direction);
 
-        // get indices & ranks of send/recv meshblocks
-        const auto [send_params,
-                    recv_params] = GetSendRecvParams(this, domain, direction, true);
-        const auto [send_indrank, send_slice] = send_params;
-        const auto [recv_indrank, recv_slice] = recv_params;
-        const auto [send_ind, send_rank]      = send_indrank;
-        const auto [recv_ind, recv_rank]      = recv_indrank;
+      //   // get indices & ranks of send/recv meshblocks
+      //   const auto [send_params,
+      //               recv_params] = GetSendRecvParams(this, domain, direction, true);
+      //   const auto [send_indrank, send_slice] = send_params;
+      //   const auto [recv_indrank, recv_slice] = recv_params;
+      //   const auto [send_ind, send_rank]      = send_indrank;
+      //   const auto [recv_ind, recv_rank]      = recv_indrank;
 
-        // skip if no communication is necessary
-        const auto is_sending   = (send_rank >= 0);
-        const auto is_receiving = (recv_rank >= 0);
-        if (not is_sending and not is_receiving) {
-          continue;
-        }
-        dirs_to_comm.push_back(direction);
-        send_ranks.push_back(send_rank);
-        recv_ranks.push_back(recv_rank);
-        send_inds.push_back(send_ind);
-        recv_inds.push_back(recv_ind);
+      //   // skip if no communication is necessary
+      //   const auto is_sending   = (send_rank >= 0);
+      //   const auto is_receiving = (recv_rank >= 0);
+      //   if (not is_sending and not is_receiving) {
+      //     continue;
+      //   }
+      //   dirs_to_comm.push_back(direction);
+      //   send_ranks.push_back(send_rank);
+      //   recv_ranks.push_back(recv_rank);
+      //   send_inds.push_back(send_ind);
+      //   recv_inds.push_back(recv_ind);
 
-        // record the # of particles to-be-sent
-        const auto nsend = npptag_vec[tag_send];
+      //   // record the # of particles to-be-sent
+      //   const auto nsend = npptag_vec[tag_send];
 
-        // request the # of particles to-be-received ...
-        // ... and send the # of particles to-be-sent
-        npart_t nrecv = 0;
-        comm::ParticleSendRecvCount(send_rank, recv_rank, nsend, nrecv);
-        npart_recv                    += nrecv;
-        npptag_recv_vec[tag_recv - 2]  = nrecv;
+      //   // request the # of particles to-be-received ...
+      //   // ... and send the # of particles to-be-sent
+      //   npart_t nrecv = 0;
+      //   comm::ParticleSendRecvCount(send_rank, recv_rank, nsend, nrecv);
+      //   npart_recv                    += nrecv;
+      //   npptag_recv_vec[tag_recv - 2]  = nrecv;
 
-        raise::ErrorIf((npart + npart_recv) >= species.maxnpart(),
-                       "Too many particles to receive (cannot fit into maxptl)",
-                       HERE);
+      //   raise::ErrorIf((npart + npart_recv) >= species.maxnpart(),
+      //                  "Too many particles to receive (cannot fit into maxptl)",
+      //                  HERE);
 
-        // if sending, record displacements to apply before
-        // ... tag_send - 2: because we only shift tags > 2 (i.e. no dead/alive)
-        if (is_sending) {
-          if constexpr (D == Dim::_1D || D == Dim::_2D || D == Dim::_3D) {
-            if (direction[0] == -1) {
-              // sending backwards in x1 (add sx1 of target meshblock)
-              shifts_in_x1_h(tag_send - 2) = subdomain(send_ind).mesh.n_active(
-                in::x1);
-            } else if (direction[0] == 1) {
-              // sending forward in x1 (subtract sx1 of source meshblock)
-              shifts_in_x1_h(tag_send - 2) = -domain.mesh.n_active(in::x1);
-            }
-          }
-          if constexpr (D == Dim::_2D || D == Dim::_3D) {
-            if (direction[1] == -1) {
-              shifts_in_x2_h(tag_send - 2) = subdomain(send_ind).mesh.n_active(
-                in::x2);
-            } else if (direction[1] == 1) {
-              shifts_in_x2_h(tag_send - 2) = -domain.mesh.n_active(in::x2);
-            }
-          }
-          if constexpr (D == Dim::_3D) {
-            if (direction[2] == -1) {
-              shifts_in_x3_h(tag_send - 2) = subdomain(send_ind).mesh.n_active(
-                in::x3);
-            } else if (direction[2] == 1) {
-              shifts_in_x3_h(tag_send - 2) = -domain.mesh.n_active(in::x3);
-            }
-          }
-        }
-      } // end directions loop
+      //   // if sending, record displacements to apply before
+      //   // ... tag_send - 2: because we only shift tags > 2 (i.e. no dead/alive)
+      //   if (is_sending) {
+      //     if constexpr (D == Dim::_1D || D == Dim::_2D || D == Dim::_3D) {
+      //       if (direction[0] == -1) {
+      //         // sending backwards in x1 (add sx1 of target meshblock)
+      //         shifts_in_x1_h(tag_send - 2) = subdomain(send_ind).mesh.n_active(
+      //           in::x1);
+      //       } else if (direction[0] == 1) {
+      //         // sending forward in x1 (subtract sx1 of source meshblock)
+      //         shifts_in_x1_h(tag_send - 2) = -domain.mesh.n_active(in::x1);
+      //       }
+      //     }
+      //     if constexpr (D == Dim::_2D || D == Dim::_3D) {
+      //       if (direction[1] == -1) {
+      //         shifts_in_x2_h(tag_send - 2) = subdomain(send_ind).mesh.n_active(
+      //           in::x2);
+      //       } else if (direction[1] == 1) {
+      //         shifts_in_x2_h(tag_send - 2) = -domain.mesh.n_active(in::x2);
+      //       }
+      //     }
+      //     if constexpr (D == Dim::_3D) {
+      //       if (direction[2] == -1) {
+      //         shifts_in_x3_h(tag_send - 2) = subdomain(send_ind).mesh.n_active(
+      //           in::x3);
+      //       } else if (direction[2] == 1) {
+      //         shifts_in_x3_h(tag_send - 2) = -domain.mesh.n_active(in::x3);
+      //       }
+      //     }
+      //   }
+      // } // end directions loop
 
       // Kokkos::deep_copy(shifts_in_x1, shifts_in_x1_h);
       // Kokkos::deep_copy(shifts_in_x2, shifts_in_x2_h);
