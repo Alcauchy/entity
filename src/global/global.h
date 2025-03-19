@@ -351,7 +351,7 @@ using npart_t     = unsigned long long int;
 
 // index/number
 // using index_t = const std::size_t;
-using index_t = unsigned long long int;
+using index_t = const unsigned long long int;
 using idx_t   = unsigned short;
 
 using range_tuple_t = std::pair<ncells_t, ncells_t>;
