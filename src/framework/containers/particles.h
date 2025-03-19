@@ -116,7 +116,7 @@ namespace ntt {
      * @returns A 1D Kokkos range policy of size of `npart`
      */
     inline auto rangeActiveParticles() const -> range_t<Dim::_1D> {
-      return CreateRangePolicy<Dim::_1D>({ 0 }, { npart() });
+      return CreateParticleRangePolicy(0u, npart());
     }
 
     /**
@@ -124,7 +124,7 @@ namespace ntt {
      * @returns A 1D Kokkos range policy of size of `npart`
      */
     inline auto rangeAllParticles() const -> range_t<Dim::_1D> {
-      return CreateRangePolicy<Dim::_1D>({ 0 }, { maxnpart() });
+      return CreateParticleRangePolicy(0u, maxnpart());
     }
 
     /* getters -------------------------------------------------------------- */

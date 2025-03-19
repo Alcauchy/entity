@@ -564,6 +564,9 @@ namespace ntt {
         npart_recv                    += nrecv;
         npptag_recv_vec[tag_recv - 2]  = nrecv;
 
+        printf("rank %d: %d particles to send to rank %d\n", domain.mpi_rank(),
+               nsend, send_rank);
+
         raise::ErrorIf((npart + npart_recv) >= species.maxnpart(),
                        "Too many particles to receive (cannot fit into maxptl)",
                        HERE);
