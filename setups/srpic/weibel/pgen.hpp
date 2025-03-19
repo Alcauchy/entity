@@ -57,16 +57,21 @@ namespace user {
       const auto injector_2 = arch::UniformInjector<S, M, arch::Maxwellian>(
         energy_dist_2,
         { 3, 4 });
-      arch::InjectUniform<S, M, arch::UniformInjector<S, M, arch::Maxwellian>>(
-        params,
-        local_domain,
-        injector_1,
-        HALF);
-      arch::InjectUniform<S, M, arch::UniformInjector<S, M, arch::Maxwellian>>(
-        params,
-        local_domain,
-        injector_2,
-        HALF);
+
+        int              rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+        arch::InjectUniform<S, M, arch::UniformInjector<S, M, arch::Maxwellian>>(
+          params,
+          local_domain,
+          injector_1,
+          HALF);
+        arch::InjectUniform<S, M, arch::UniformInjector<S, M, arch::Maxwellian>>(
+          params,
+          local_domain,
+          injector_2,
+          HALF);
+
     }
   };
 
