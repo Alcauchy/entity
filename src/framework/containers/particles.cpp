@@ -139,7 +139,7 @@ namespace ntt {
 
   template <typename T>
   void RemoveDeadInArray(array_t<T*>& arr, const array_t<npart_t*>& indices_alive) {
-    auto    n_alive = indices_alive.extent(0);
+    npart_t n_alive = indices_alive.extent(0);
     auto    buffer  = Kokkos::View<T*>("buffer", n_alive);
     Kokkos::parallel_for(
       "PopulateBufferAlive",
@@ -147,13 +147,13 @@ namespace ntt {
       Lambda(index_t p) { buffer(p) = arr(indices_alive(p)); });
 
     Kokkos::deep_copy(
-      Kokkos::subview(arr, std::make_pair(0, n_alive)),
+      Kokkos::subview(arr, std::make_pair(static_cast<npart_t>(0), n_alive)),
       buffer);
   }
 
   template <typename T>
   void RemoveDeadInArray(array_t<T**>& arr, const array_t<npart_t*>& indices_alive) {
-    auto    n_alive = indices_alive.extent(0);
+    npart_t n_alive = indices_alive.extent(0);
     auto    buffer  = array_t<T**> { "buffer", n_alive, arr.extent(1) };
     Kokkos::parallel_for(
       "PopulateBufferAlive",
@@ -162,7 +162,7 @@ namespace ntt {
 
     Kokkos::deep_copy(
       Kokkos::subview(arr,
-                      std::make_pair(0, n_alive),
+                      std::make_pair(static_cast<npart_t>(0), n_alive),
                       Kokkos::ALL),
       buffer);
   }

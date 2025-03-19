@@ -85,7 +85,7 @@ namespace kernel::comm {
         if (idx_for_tag >= npart - npart_alive) {
           raise::KernelError(HERE, "Outgoing indices idx exceeds the array size");
         }
-        outgoing_indices(idx_for_tag) = static_cast<npart_t>(p);
+        outgoing_indices(idx_for_tag) = p;
         // apply offsets
         if (tag(p) != ParticleTag::dead) {
           if constexpr (D == Dim::_1D or D == Dim::_2D or D == Dim::_3D) {
