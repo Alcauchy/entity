@@ -1049,138 +1049,138 @@ namespace kernel::sr {
 
     // Extra
     Inline void boundaryConditions(index_t& p, coord_t<M::PrtlDim>& xp) const {
-      // if constexpr (D == Dim::_1D || D == Dim::_2D || D == Dim::_3D) {
-      //   auto invert_vel = false;
-      //   if (i1(p) < 0) {
-      //     if (is_periodic_i1min) {
-      //       i1(p)      += ni1;
-      //       i1_prev(p) += ni1;
-      //     } else if (is_absorb_i1min) {
-      //       tag(p) = ParticleTag::dead;
-      //     } else if (is_reflect_i1min) {
-      //       i1(p)      = 0;
-      //       dx1(p)     = ONE - dx1(p);
-      //       invert_vel = true;
-      //     }
-      //   } else if (i1(p) >= ni1) {
-      //     if (is_periodic_i1max) {
-      //       i1(p)      -= ni1;
-      //       i1_prev(p) -= ni1;
-      //     } else if (is_absorb_i1max) {
-      //       tag(p) = ParticleTag::dead;
-      //     } else if (is_reflect_i1max) {
-      //       i1(p)      = ni1 - 1;
-      //       dx1(p)     = ONE - dx1(p);
-      //       invert_vel = true;
-      //     }
-      //   }
-      //   if (invert_vel) {
-      //     if constexpr (M::CoordType == Coord::Cart) {
-      //       ux1(p) = -ux1(p);
-      //     } else {
-      //       vec_t<Dim::_3D> v { ZERO }, vXYZ { ZERO };
-      //       metric.template transform_xyz<Idx::XYZ, Idx::U>(
-      //         xp,
-      //         { ux1(p), ux2(p), ux3(p) },
-      //         v);
-      //       v[0] = -v[0];
-      //       metric.template transform_xyz<Idx::U, Idx::XYZ>(xp, v, vXYZ);
-      //       ux1(p) = vXYZ[0];
-      //       ux2(p) = vXYZ[1];
-      //       ux3(p) = vXYZ[2];
-      //     }
-      //   }
-      // }
-      // if constexpr (D == Dim::_2D || D == Dim::_3D) {
-      //   auto invert_vel = false;
-      //   if (i2(p) < 0) {
-      //     if (is_periodic_i2min) {
-      //       i2(p)      += ni2;
-      //       i2_prev(p) += ni2;
-      //     } else if (is_absorb_i2min) {
-      //       tag(p) = ParticleTag::dead;
-      //     } else if (is_reflect_i2min) {
-      //       i2(p)      = 0;
-      //       dx2(p)     = ONE - dx2(p);
-      //       invert_vel = true;
-      //     } else if (is_axis_i2min) {
-      //       i2(p)  = 0;
-      //       dx2(p) = ONE - dx2(p);
-      //     }
-      //   } else if (i2(p) >= ni2) {
-      //     if (is_periodic_i2max) {
-      //       i2(p)      -= ni2;
-      //       i2_prev(p) -= ni2;
-      //     } else if (is_absorb_i2max) {
-      //       tag(p) = ParticleTag::dead;
-      //     } else if (is_reflect_i2max) {
-      //       i2(p)      = ni2 - 1;
-      //       dx2(p)     = ONE - dx2(p);
-      //       invert_vel = true;
-      //     } else if (is_axis_i2max) {
-      //       i2(p)  = ni2 - 1;
-      //       dx2(p) = ONE - dx2(p);
-      //     }
-      //   }
-      //   if (invert_vel) {
-      //     if constexpr (M::CoordType == Coord::Cart) {
-      //       ux2(p) = -ux2(p);
-      //     } else {
-      //       vec_t<Dim::_3D> v { ZERO }, vXYZ { ZERO };
-      //       metric.template transform_xyz<Idx::XYZ, Idx::U>(
-      //         xp,
-      //         { ux1(p), ux2(p), ux3(p) },
-      //         v);
-      //       v[1] = -v[1];
-      //       metric.template transform_xyz<Idx::U, Idx::XYZ>(xp, v, vXYZ);
-      //       ux1(p) = vXYZ[0];
-      //       ux2(p) = vXYZ[1];
-      //       ux3(p) = vXYZ[2];
-      //     }
-      //   }
-      // }
-      // if constexpr (D == Dim::_3D) {
-      //   auto invert_vel = false;
-      //   if (i3(p) < 0) {
-      //     if (is_periodic_i3min) {
-      //       i3(p)      += ni3;
-      //       i3_prev(p) += ni3;
-      //     } else if (is_absorb_i3min) {
-      //       tag(p) = ParticleTag::dead;
-      //     } else if (is_reflect_i3min) {
-      //       i3(p)      = 0;
-      //       dx3(p)     = ONE - dx3(p);
-      //       invert_vel = true;
-      //     }
-      //   } else if (i3(p) >= ni3) {
-      //     if (is_periodic_i3max) {
-      //       i3(p)      -= ni3;
-      //       i3_prev(p) -= ni3;
-      //     } else if (is_absorb_i3max) {
-      //       tag(p) = ParticleTag::dead;
-      //     } else if (is_reflect_i3max) {
-      //       i3(p)      = ni3 - 1;
-      //       dx3(p)     = ONE - dx3(p);
-      //       invert_vel = true;
-      //     }
-      //   }
-      //   if (invert_vel) {
-      //     if constexpr (M::CoordType == Coord::Cart) {
-      //       ux3(p) = -ux3(p);
-      //     } else {
-      //       vec_t<Dim::_3D> v { ZERO }, vXYZ { ZERO };
-      //       metric.template transform_xyz<Idx::XYZ, Idx::U>(
-      //         xp,
-      //         { ux1(p), ux2(p), ux3(p) },
-      //         v);
-      //       v[2] = -v[2];
-      //       metric.template transform_xyz<Idx::U, Idx::XYZ>(xp, v, vXYZ);
-      //       ux1(p) = vXYZ[0];
-      //       ux2(p) = vXYZ[1];
-      //       ux3(p) = vXYZ[2];
-      //     }
-      //   }
-      // }
+      if constexpr (D == Dim::_1D || D == Dim::_2D || D == Dim::_3D) {
+        auto invert_vel = false;
+        if (i1(p) < 0) {
+          if (is_periodic_i1min) {
+            i1(p)      += ni1;
+            i1_prev(p) += ni1;
+          } else if (is_absorb_i1min) {
+            tag(p) = ParticleTag::dead;
+          } else if (is_reflect_i1min) {
+            i1(p)      = 0;
+            dx1(p)     = ONE - dx1(p);
+            invert_vel = true;
+          }
+        } else if (i1(p) >= ni1) {
+          if (is_periodic_i1max) {
+            i1(p)      -= ni1;
+            i1_prev(p) -= ni1;
+          } else if (is_absorb_i1max) {
+            tag(p) = ParticleTag::dead;
+          } else if (is_reflect_i1max) {
+            i1(p)      = ni1 - 1;
+            dx1(p)     = ONE - dx1(p);
+            invert_vel = true;
+          }
+        }
+        if (invert_vel) {
+          if constexpr (M::CoordType == Coord::Cart) {
+            ux1(p) = -ux1(p);
+          } else {
+            vec_t<Dim::_3D> v { ZERO }, vXYZ { ZERO };
+            metric.template transform_xyz<Idx::XYZ, Idx::U>(
+              xp,
+              { ux1(p), ux2(p), ux3(p) },
+              v);
+            v[0] = -v[0];
+            metric.template transform_xyz<Idx::U, Idx::XYZ>(xp, v, vXYZ);
+            ux1(p) = vXYZ[0];
+            ux2(p) = vXYZ[1];
+            ux3(p) = vXYZ[2];
+          }
+        }
+      }
+      if constexpr (D == Dim::_2D || D == Dim::_3D) {
+        auto invert_vel = false;
+        if (i2(p) < 0) {
+          if (is_periodic_i2min) {
+            i2(p)      += ni2;
+            i2_prev(p) += ni2;
+          } else if (is_absorb_i2min) {
+            tag(p) = ParticleTag::dead;
+          } else if (is_reflect_i2min) {
+            i2(p)      = 0;
+            dx2(p)     = ONE - dx2(p);
+            invert_vel = true;
+          } else if (is_axis_i2min) {
+            i2(p)  = 0;
+            dx2(p) = ONE - dx2(p);
+          }
+        } else if (i2(p) >= ni2) {
+          if (is_periodic_i2max) {
+            i2(p)      -= ni2;
+            i2_prev(p) -= ni2;
+          } else if (is_absorb_i2max) {
+            tag(p) = ParticleTag::dead;
+          } else if (is_reflect_i2max) {
+            i2(p)      = ni2 - 1;
+            dx2(p)     = ONE - dx2(p);
+            invert_vel = true;
+          } else if (is_axis_i2max) {
+            i2(p)  = ni2 - 1;
+            dx2(p) = ONE - dx2(p);
+          }
+        }
+        if (invert_vel) {
+          if constexpr (M::CoordType == Coord::Cart) {
+            ux2(p) = -ux2(p);
+          } else {
+            vec_t<Dim::_3D> v { ZERO }, vXYZ { ZERO };
+            metric.template transform_xyz<Idx::XYZ, Idx::U>(
+              xp,
+              { ux1(p), ux2(p), ux3(p) },
+              v);
+            v[1] = -v[1];
+            metric.template transform_xyz<Idx::U, Idx::XYZ>(xp, v, vXYZ);
+            ux1(p) = vXYZ[0];
+            ux2(p) = vXYZ[1];
+            ux3(p) = vXYZ[2];
+          }
+        }
+      }
+      if constexpr (D == Dim::_3D) {
+        auto invert_vel = false;
+        if (i3(p) < 0) {
+          if (is_periodic_i3min) {
+            i3(p)      += ni3;
+            i3_prev(p) += ni3;
+          } else if (is_absorb_i3min) {
+            tag(p) = ParticleTag::dead;
+          } else if (is_reflect_i3min) {
+            i3(p)      = 0;
+            dx3(p)     = ONE - dx3(p);
+            invert_vel = true;
+          }
+        } else if (i3(p) >= ni3) {
+          if (is_periodic_i3max) {
+            i3(p)      -= ni3;
+            i3_prev(p) -= ni3;
+          } else if (is_absorb_i3max) {
+            tag(p) = ParticleTag::dead;
+          } else if (is_reflect_i3max) {
+            i3(p)      = ni3 - 1;
+            dx3(p)     = ONE - dx3(p);
+            invert_vel = true;
+          }
+        }
+        if (invert_vel) {
+          if constexpr (M::CoordType == Coord::Cart) {
+            ux3(p) = -ux3(p);
+          } else {
+            vec_t<Dim::_3D> v { ZERO }, vXYZ { ZERO };
+            metric.template transform_xyz<Idx::XYZ, Idx::U>(
+              xp,
+              { ux1(p), ux2(p), ux3(p) },
+              v);
+            v[2] = -v[2];
+            metric.template transform_xyz<Idx::U, Idx::XYZ>(xp, v, vXYZ);
+            ux1(p) = vXYZ[0];
+            ux2(p) = vXYZ[1];
+            ux3(p) = vXYZ[2];
+          }
+        }
+      }
 #if defined(MPI_ENABLED)
       if constexpr (D == Dim::_1D) {
         tag(p) = mpi::SendTag(tag(p), i1(p) < 0, i1(p) >= ni1);
