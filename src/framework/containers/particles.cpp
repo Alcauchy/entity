@@ -147,7 +147,7 @@ namespace ntt {
       Lambda(index_t p) { buffer(p) = arr(indices_alive(p)); });
 
     Kokkos::deep_copy(
-      Kokkos::subview(arr, std::make_pair(static_cast<npart_t>(0), n_alive)),
+      Kokkos::subview(arr, std::make_pair(0, n_alive)),
       buffer);
   }
 
@@ -162,7 +162,7 @@ namespace ntt {
 
     Kokkos::deep_copy(
       Kokkos::subview(arr,
-                      std::make_pair(static_cast<npart_t>(0), n_alive),
+                      std::make_pair(0, n_alive),
                       Kokkos::ALL),
       buffer);
   }
