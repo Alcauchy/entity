@@ -139,7 +139,7 @@ namespace ntt {
 
   template <typename T>
   void RemoveDeadInArray(array_t<T*>& arr, const array_t<npart_t*>& indices_alive) {
-    npart_t n_alive = indices_alive.extent(0);
+    auto    n_alive = indices_alive.extent(0);
     auto    buffer  = Kokkos::View<T*>("buffer", n_alive);
     Kokkos::parallel_for(
       "PopulateBufferAlive",
@@ -153,7 +153,7 @@ namespace ntt {
 
   template <typename T>
   void RemoveDeadInArray(array_t<T**>& arr, const array_t<npart_t*>& indices_alive) {
-    npart_t n_alive = indices_alive.extent(0);
+    auto    n_alive = indices_alive.extent(0);
     auto    buffer  = array_t<T**> { "buffer", n_alive, arr.extent(1) };
     Kokkos::parallel_for(
       "PopulateBufferAlive",
