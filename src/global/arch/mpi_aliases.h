@@ -69,8 +69,6 @@ namespace mpi {
       return MPI_LONG_LONG;
     } else if constexpr (std::is_same<T, unsigned long long int>::value) {
       return MPI_UNSIGNED_LONG_LONG;
-    } else if constexpr (std::is_same<T, npart_t>::value) {
-      return MPI_UNSIGNED_LONG_LONG;
     } else if constexpr (std::is_same<T, std::size_t>::value) {
       return MPI_UNSIGNED_LONG_LONG;
     } else if constexpr (std::is_same<T, float>::value) {
