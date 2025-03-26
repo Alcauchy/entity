@@ -273,6 +273,7 @@ namespace ntt {
       const auto [recv_indrank, recv_slice] = recv_params;
       const auto [send_ind, send_rank]      = send_indrank;
       const auto [recv_ind, recv_rank]      = recv_indrank;
+
       if (send_rank < 0 and recv_rank < 0) {
         continue;
       }

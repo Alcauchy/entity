@@ -284,8 +284,17 @@ namespace comm {
           }
         }
       }
+
     }
   }
+
+  void print_buffer(const std::vector<int>& buffer, int rank, const std::string& label) {
+    std::cout << "Rank " << rank << " " << label << ": ";
+    for (const auto& val : buffer) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+}
 
   void ParticleSendRecvCount(int      send_rank,
                              int      recv_rank,
@@ -397,10 +406,11 @@ namespace comm {
       // clang-format on
 
       const auto recv_offset_int    = current_received * NINTS;
-      const auto recv_offset_real   = current_received * NREALS;
+      const auto recv_offset_real   = static_cast<unsigned short>(current_received * NREALS);
       const auto recv_offset_prtldx = current_received * NPRTLDX;
       const auto recv_offset_pld    = current_received * NPLDS;
 
+      Kokkos::fence();
       if ((send_rank >= 0) and (recv_rank >= 0) and (npart_send_in > 0) and
           (npart_recv_in > 0)) {
         raise::ErrorIf(recv_offset_int + npart_recv_in * NINTS >
@@ -464,6 +474,7 @@ namespace comm {
                  send_rank,
                  0,
                  MPI_COMM_WORLD);
+
         MPI_Send(send_buff_real.data(),
                  npart_send_in * NREALS,
                  mpi::get_type<real_t>(),
@@ -520,6 +531,7 @@ namespace comm {
                    MPI_STATUS_IGNORE);
         }
       }
+
       current_received += npart_recv_in;
       iteration++;
 

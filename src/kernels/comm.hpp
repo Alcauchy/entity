@@ -296,7 +296,7 @@ namespace kernel::comm {
       , tag { tag }
       , outgoing_indices { outgoing_indices } {}
 
-    Inline void operator()(index_t p) const {
+    Inline void operator()(npart_t p) const {
       npart_t idx;
       if (p >= npart_holes) {
         idx = npart + p - npart_holes;
