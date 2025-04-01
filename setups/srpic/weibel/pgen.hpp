@@ -58,9 +58,6 @@ namespace user {
         energy_dist_2,
         { 3, 4 });
 
-        int              rank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
         arch::InjectUniform<S, M, arch::UniformInjector<S, M, arch::Maxwellian>>(
           params,
           local_domain,

@@ -186,6 +186,11 @@ namespace comm {
       }
 
       if (send_rank >= 0 && recv_rank >= 0) {
+
+        // auto send_fld_host = Kokkos::create_mirror(send_fld);
+        // Kokkos::deep_copy(send_fld_host, send_fld);
+        // auto recv_fld_host = Kokkos::create_mirror(recv_fld);
+
         MPI_Sendrecv(send_fld.data(),
                      nsend,
                      mpi::get_type<real_t>(),
@@ -198,7 +203,14 @@ namespace comm {
                      0,
                      MPI_COMM_WORLD,
                      MPI_STATUS_IGNORE);
+
+        // Kokkos::deep_copy(recv_fld, recv_fld_host);
+
       } else if (send_rank >= 0) {
+
+// auto send_fld_host = Kokkos::create_mirror(send_fld);
+//         Kokkos::deep_copy(send_fld_host, send_fld);
+
         MPI_Send(send_fld.data(),
                  nsend,
                  mpi::get_type<real_t>(),
@@ -206,7 +218,11 @@ namespace comm {
                  0,
                  MPI_COMM_WORLD);
 
+
       } else if (recv_rank >= 0) {
+
+        // auto recv_fld_host = Kokkos::create_mirror(recv_fld);
+
         MPI_Recv(recv_fld.data(),
                  nrecv,
                  mpi::get_type<real_t>(),
@@ -214,6 +230,10 @@ namespace comm {
                  0,
                  MPI_COMM_WORLD,
                  MPI_STATUS_IGNORE);
+
+                //  Kokkos::deep_copy(recv_fld, recv_fld_host);
+
+
       } else {
         raise::Error("CommunicateField called with negative ranks", HERE);
       }

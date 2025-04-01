@@ -559,9 +559,6 @@ namespace kernel::sr {
       // update position
       posUpd(true, p, xp_Cd);
 
-      printf("ux1(p) = %f, ux2(p) = %f, ux3(p) = %f, i1(p) = %d, i2(p) = %d, dx1(p) = %f, dx2(p) = %f\n", ux1(p), ux2(p), ux3(p), i1(p), i2(p), dx1(p), dx2(p));
-
-
     }
 
     Inline void posUpd(bool massive, index_t& p, coord_t<M::PrtlDim>& xp) const {
