@@ -21,9 +21,8 @@
 #include <vector>
 
 namespace diag {
-  auto npart_stats(
-    npart_t npart,
-    npart_t maxnpart) -> std::vector<std::pair<npart_t, unsigned short>> {
+  auto npart_stats(npart_t npart, npart_t maxnpart)
+    -> std::vector<std::pair<npart_t, unsigned short>> {
     auto stats = std::vector<std::pair<npart_t, unsigned short>>();
 #if !defined(MPI_ENABLED)
     stats.push_back(
