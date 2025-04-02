@@ -9,6 +9,8 @@
 #include "arch/traits.h"
 #include "utils/numeric.h"
 
+#include "kernels/particle_moments.hpp"
+
 #include "archetypes/energy_dist.h"
 #include "archetypes/particle_injector.h"
 #include "archetypes/problem_generator.h"
@@ -33,23 +35,69 @@ namespace user {
     const real_t yi, width;
   };
 
+  //field initializer
   template <Dimension D>
   struct InitFields {
-    InitFields(real_t Bmag, real_t width, real_t y1, real_t y2)
+    InitFields(real_t Bmag, real_t Bg, real_t width, real_t y1)
       : Bmag { Bmag }
+      , Bg { Bg }
       , width { width }
-      , y1 { y1 }
-      , y2 { y2 } {}
+      , y1 { y1 } {}
 
     Inline auto bx1(const coord_t<D>& x_Ph) const -> real_t {
-      return Bmag * (math::tanh((x_Ph[1] - y1) / width) -
-                     math::tanh((x_Ph[1] - y2) / width) - 1);
+      return Bmag * (math::tanh((x_Ph[1] - y1) / width));
     }
+    
+    Inline auto bx3(const coord_t<D>& x_Ph) const -> real_t {
+     return Bg;
+    } 
 
   private:
-    const real_t Bmag, width, y1, y2;
+    const real_t Bmag, Bg, width, y1;
   };
 
+  // boundary conditions for fields
+  template<Dimension D, in O>
+  struct Suchfields : public InitFields<D> {
+    Suchfields(real_t Bmag, real_t Bg, real_t width, real_t y1, real_t xc) 
+       :  InitFields<D>{ Bmag, Bg, width, y1 }
+       , xc {xc} {}
+
+    Inline auto bx2(const coord_t<D>&) const -> real_t {
+      if constexpr(O == in::x1){
+        return ONE;
+      }
+      else {
+        return ZERO;
+      }
+      
+    }
+
+    Inline auto ex1(const coord_t<D>&) const -> real_t {
+      return ZERO;
+    }
+
+    Inline auto ex2(const coord_t<D>&) const -> real_t {
+      return ZERO;
+    }
+
+    Inline auto ex3(const coord_t<D>&) const -> real_t {
+      return ZERO; 
+    }
+	  private:
+    const real_t xc;
+  };
+
+  // constant particle density for particle boundaries
+  template<SimEngine::type S, class M> 
+  struct ConstDens {
+      Inline auto operator()(const coord_t<M::Dim>& x_Ph) const -> real_t {
+          return ONE;
+    }
+  };
+  template<SimEngine::type S,class M>
+	  using spatial_dist_t = arch::Replenish<S,M,ConstDens<S,M>>;
+  
   template <SimEngine::type S, class M>
   struct PGen : public arch::ProblemGenerator<S, M> {
     // compatibility traits for the problem generator
@@ -64,24 +112,35 @@ namespace user {
     using arch::ProblemGenerator<S, M>::C;
     using arch::ProblemGenerator<S, M>::params;
 
-    const real_t  Bmag, width, overdensity, y1, y2, bg_temp;
+    const real_t  Bmag, width, overdensity, y1, bg_temp, Bg, n0, dy, up_temperature, xc, yc;
     InitFields<D> init_flds;
+    
+	
 
     inline PGen(const SimulationParams& p, const Metadomain<S, M>& m)
       : arch::ProblemGenerator<S, M>(p)
       , Bmag { p.template get<real_t>("setup.Bmag", 1.0) }
+      , Bg { p.template get<real_t>("setup.Bg", 0.0)}
+      , up_temperature { p.template get<real_t>("setup.up_temperature", 0.001)}
       , width { p.template get<real_t>("setup.width") }
       , overdensity { p.template get<real_t>("setup.overdensity") }
+      , n0 { p.template get<real_t>("setup.n0") }
+      , dy { TWO * p.template get<real_t>("scales.skindepth0")}
       , y1 { m.mesh().extent(in::x2).first +
-             INV_4 *
+             INV_2 *
                (m.mesh().extent(in::x2).second - m.mesh().extent(in::x2).first) }
-      , y2 { m.mesh().extent(in::x2).first +
-             3 * INV_4 *
+      , xc {HALF * (m.mesh().extent(in::x2).second - m.mesh().extent(in::x2).first) }
+      , yc { HALF *
                (m.mesh().extent(in::x2).second - m.mesh().extent(in::x2).first) }
-      , init_flds { Bmag, width, y1, y2 }
+      , init_flds { Bmag, Bg, width, y1}
       , bg_temp { p.template get<real_t>("setup.bg_temp") } {}
 
     inline PGen() {}
+
+    auto MatchFields(real_t time) const -> Suchfields<D, in::x1>{
+      Suchfields<D, in::x1> such_fields(Bmag, Bg, width, y1, xc);
+      return such_fields;
+    }
 
     inline void InitPrtls(Domain<S, M>& local_domain) {
       // background
@@ -95,7 +154,7 @@ namespace user {
         params,
         local_domain,
         injector,
-        HALF);
+        ONE);
 
       const auto sigma = params.template get<real_t>("scales.sigma0");
       const auto c_omp = params.template get<real_t>("scales.skindepth0");
@@ -119,23 +178,70 @@ namespace user {
                                                        local_domain,
                                                        inj_cs_1,
                                                        overdensity);
-      // current layer #2
-      const auto edist_cs_2 = arch::Maxwellian<S, M>(local_domain.mesh.metric,
-                                                     local_domain.random_pool,
-                                                     cs_temp,
-                                                     -cs_drift_u,
-                                                     in::x3,
-                                                     false);
-      const auto sdist_cs_2 = CurrentLayer<S, M>(local_domain.mesh.metric, width, y2);
-      const auto inj_cs_2 = arch::NonUniformInjector<S, M, arch::Maxwellian, CurrentLayer>(
-        edist_cs_2,
-        sdist_cs_2,
-        { 1, 2 });
-      arch::InjectNonUniform<S, M, decltype(inj_cs_2)>(params,
-                                                       local_domain,
-                                                       inj_cs_2,
-                                                       overdensity);
     }
+
+   void CustomPostStep(std::size_t step, long double time, Domain<S, M>& domain){
+	//0. define target density profile and box where it has to be reached
+	//1. compute density
+	//2. define spatial distribution
+	//3. define energy distribution
+	//4. define particle injector
+	//5. inject particles 
+	
+	//step 0. 
+	//defining the regions of interest (lower and upper y-boundaries)
+	boundaries_t<real_t> box_upper, box_lower;
+	const auto [xmin, xmax] = domain.mesh.extent(in::x1);
+	const auto [ymin, ymax] = domain.mesh.extent(in::x2);
+	box_upper.push_back({ xmin,xmax });
+	box_lower.push_back({ xmin,xmax });
+
+	box_upper.push_back({ ymax - dy, ymax });
+	box_lower.push_back({ ymin, ymin + dy });
+ 
+	if constexpr(M::Dim == Dim::_3D) {
+		const auto [zmin, zmax] = domain.mesh.extent(in::x3);
+		box_upper.push_back({ zmin,zmax });
+		box_lower.push_back({ zmin,zmax });
+	}
+
+	
+	const auto const_dens = ConstDens<S, M>();
+	const auto inv_n0 = ONE / n0;
+
+	//step 1 compute density 
+        auto scatter_bckp = Kokkos::Experimental::create_scatter_view(domain.fields.bckp);
+	for (auto & prtl_spec : domain.species) {
+        // clang-format off
+        Kokkos::parallel_for(
+          "ComputeMoments",
+          prtl_spec.rangeActiveParticles(),
+          kernel::ParticleMoments_kernel<S, M, FldsID::N, 6>({}, scatter_bckp, 0,
+                                                    prtl_spec.i1, prtl_spec.i2, prtl_spec.i3,
+                                                    prtl_spec.dx1, prtl_spec.dx2, prtl_spec.dx3,
+                                                    prtl_spec.ux1, prtl_spec.ux2, prtl_spec.ux3,
+                                                    prtl_spec.phi, prtl_spec.weight, prtl_spec.tag,
+                                                    prtl_spec.mass(), prtl_spec.charge(),
+                                                    false,
+                                                    domain.mesh.metric, domain.mesh.flds_bc(),
+                                                    0, inv_n0, 0));
+	}
+	Kokkos::Experimental::contribute(domain.fields.bckp, scatter_bckp);
+        
+	
+	//step 2. define spatial distribution
+//	const auto spatial_dist = arch::Replenish<S, M, user::ConstDens<S,M>>(domain.mesh.metric, domain.fields.bckp, 0, const_dens, ONE);
+  const auto spatial_dist = spatial_dist_t<S,M>(domain.mesh.metric, domain.fields.bckp,0,const_dens,ONE);
+	//step 3. define energy distribution  
+	const auto energy_dist = arch::Maxwellian<S, M>(domain.mesh.metric, domain.random_pool, up_temperature);
+	//step 4. define particle injector
+	const auto injector = arch::NonUniformInjector<S, M, arch::Maxwellian, spatial_dist_t>(energy_dist, spatial_dist, {1,2});
+	//step 5. inject particles 
+	arch::InjectNonUniform<S, M, decltype(injector)>(params, domain, injector, ONE, false, box_upper); //upper boudary
+	arch::InjectNonUniform<S, M, decltype(injector)>(params, domain, injector, ONE, false, box_lower); //lower boundary
+
+
+   } 
   };
 
 } // namespace user

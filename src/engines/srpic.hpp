@@ -652,8 +652,8 @@ namespace ntt {
         range_max[d] = intersect_range[d].second;
       }
       if constexpr (traits::has_member<traits::pgen::match_fields_t, pgen_t>::value) {
-        auto match_fields = m_pgen.MatchFields(time);
         if (dim == in::x1) {
+		auto match_fields = m_pgen.MatchFields<in::x1>(time);
           Kokkos::parallel_for(
             "MatchFields",
             CreateRangePolicy<M::Dim>(range_min, range_max),
@@ -665,6 +665,7 @@ namespace ntt {
               ds,
               tags));
         } else if (dim == in::x2) {
+		auto match_fields = m_pgen.MatchFields<in::x2>(time);
           if constexpr (M::Dim == Dim::_2D or M::Dim == Dim::_3D) {
             Kokkos::parallel_for(
               "MatchFields",
@@ -680,6 +681,7 @@ namespace ntt {
             raise::Error("Invalid dimension", HERE);
           }
         } else if (dim == in::x3) {
+		auto match_fields = m_pgen.MatchFields<in::x3>(time);
           if constexpr (M::Dim == Dim::_3D) {
             Kokkos::parallel_for(
               "MatchFields",
