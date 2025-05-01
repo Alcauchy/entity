@@ -33,7 +33,7 @@ namespace stats {
     }
     // determine the species and components to output
     if (is_moment()) {
-      species = InterpretSpecies(name);
+      // species = InterpretSpecies(name);
     } else {
       species = {};
     }
@@ -42,7 +42,7 @@ namespace stats {
       comp = { { 1 }, { 2 }, { 3 } };
     } else if (id() == StatsID::T) {
       // energy-momentum tensor
-      comp = InterpretComponents({ name.substr(1, 1), name.substr(2, 1) });
+      // comp = InterpretComponents({ name.substr(1, 1), name.substr(2, 1) });
     } else {
       // scalar (e.g., Rho, E^2, etc.)
       comp = {};

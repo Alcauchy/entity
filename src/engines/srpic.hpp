@@ -112,7 +112,7 @@ namespace ntt {
         if (deposit_enabled) {
           timers.start("CurrentDeposit");
           Kokkos::deep_copy(dom.fields.cur, ZERO);
-          CurrentsDeposit(dom);
+          // CurrentsDeposit(dom);
           timers.stop("CurrentDeposit");
 
           timers.start("Communications");
@@ -491,33 +491,35 @@ namespace ntt {
         if (species.npart() == 0 || cmp::AlmostZero(species.charge())) {
           continue;
         }
-        Kokkos::parallel_for("CurrentsDeposit",
-                             species.rangeActiveParticles(),
-                             kernel::DepositCurrents_kernel<SimEngine::SRPIC, M>(
-                               scatter_cur,
-                               species.i1,
-                               species.i2,
-                               species.i3,
-                               species.i1_prev,
-                               species.i2_prev,
-                               species.i3_prev,
-                               species.dx1,
-                               species.dx2,
-                               species.dx3,
-                               species.dx1_prev,
-                               species.dx2_prev,
-                               species.dx3_prev,
-                               species.ux1,
-                               species.ux2,
-                               species.ux3,
-                               species.phi,
-                               species.weight,
-                               species.tag,
-                               domain.mesh.metric,
-                               (real_t)(species.charge()),
-                               dt));
+        if constexpr (M::Dim == Dim::_2D) {
+        // Kokkos::parallel_for("CurrentsDeposit",
+        //                      species.rangeActiveParticles(),
+        //                      kernel::DepositCurrents_kernel<SimEngine::SRPIC, M>(
+        //                        scatter_cur,
+        //                        species.i1,
+        //                        species.i2,
+        //                        species.i3,
+        //                        species.i1_prev,
+        //                        species.i2_prev,
+        //                        species.i3_prev,
+        //                        species.dx1,
+        //                        species.dx2,
+        //                        species.dx3,
+        //                        species.dx1_prev,
+        //                        species.dx2_prev,
+        //                        species.dx3_prev,
+        //                        species.ux1,
+        //                        species.ux2,
+        //                        species.ux3,
+        //                        species.phi,
+        //                        species.weight,
+        //                        species.tag,
+        //                        domain.mesh.metric,
+        //                        (real_t)(species.charge()),
+        //                        dt));
       }
-      Kokkos::Experimental::contribute(domain.fields.cur, scatter_cur);
+      // Kokkos::Experimental::contribute(domain.fields.cur, scatter_cur);
+    }
     }
 
     void CurrentsAmpere(domain_t& domain) {
