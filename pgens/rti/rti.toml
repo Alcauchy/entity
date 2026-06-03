@@ -1,0 +1,82 @@
+[simulation]
+  name    = "rti"
+  engine  = "srpic"
+  runtime = 3000.0
+
+[grid]
+  resolution = [1000, 1000]
+  extent     = [[0.0, 200.0], [0.0, 200.0]]
+
+  [grid.metric]
+    metric = "minkowski"
+
+  [grid.boundaries]
+    fields    = [["PERIODIC"], ["CONDUCTOR", "CONDUCTOR"]]
+    particles = [["PERIODIC"], ["REFLECT", "REFLECT"]]
+
+
+[scales]
+  # skindepth0 = fiducial skin depth, larmor0 - fiducial larmor radius. Setting larmor0=1 defines that fiducial length = larmor0
+  # sigma0 = (skindepth0/larmor0)^2  - sets magnetization
+  larmor0    = 1.0
+  skindepth0 = 0.17677
+
+[algorithms]
+  current_filters = 8
+
+  [algorithms.timestep]
+    CFL = 0.45
+
+[particles]
+  ppc0 = 32.0
+
+  # species 1 & 2: hot region (y < L_y/2),  n_h = n_cold / nc_over_nh
+  [[particles.species]]
+    label    = "hot e-"
+    mass     = 1.0
+    charge   = -1.0
+    maxnpart = 1e6
+
+  [[particles.species]]
+    label    = "hot e+"
+    mass     = 1.0
+    charge   = 1.0
+    maxnpart = 1e6
+
+  # species 3 & 4: cold region (y > L_y/2),  n_cold
+  [[particles.species]]
+    label    = "cold e-"
+    mass     = 1.0
+    charge   = -1.0
+    maxnpart = 1e7
+
+  [[particles.species]]
+    label    = "cold e+"
+    mass     = 1.0
+    charge   = 1.0
+    maxnpart = 1e7
+
+[setup]
+  nc_over_nh = 8.0     # density contrast; n_h = n_cold / nc_over_nh, default = 511
+  theta_rot  = 0.7854  # field rotation angle [rad] = pi/4
+  T_int      = 0.0625  # temperature at interface [m_e c^2] = 1/16
+  gravity    = 0.00075 # free fall acceleration, default is 2.4 T_int/mL
+
+[output]
+  format        = "BPFile"
+  interval = 50
+
+  [output.fields]
+    # N_1_2: total hot plasma number density; N_3_4: total cold plasma number density
+    quantities  = ["B", "E", "J", "N_1_2", "N_3_4"]
+    mom_smooth  = 2
+
+  [output.particles]
+    enable = false
+
+  [output.spectra]
+    enable = false
+
+[checkpoint]
+  interval = 500
+  keep     = 2
